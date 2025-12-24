@@ -1,0 +1,55 @@
+name: Build Windows Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build Windows executable
+      run: |
+        pyinstaller --onefile --name=转粮数据汇总工具 --console --clean --noconfirm 汇总脚本.py
+    
+    - name: Upload Windows executable
+      uses: actions/upload-artifact@v3
+      with:
+        name: 转粮数据汇总工具-Windows
+        path: dist/转粮数据汇总工具.exe
+        retention-days: 30
+    
+    - name: Create Release (if tag)
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/转粮数据汇总工具.exe
+        body: |
+          Windows版本可执行文件
+          
+          使用方法：
+          1. 下载 转粮数据汇总工具.exe
+          2. 将exe文件放在包含转粮数据文件的目录
+          3. 双击运行即可
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
