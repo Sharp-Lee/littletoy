@@ -360,9 +360,22 @@ def update_summary_file(summary_file, data_dict):
         traceback.print_exc()
         raise
 
+def get_base_dir():
+    """
+    获取程序运行目录
+    兼容Python脚本和PyInstaller打包的exe文件
+    """
+    if getattr(sys, 'frozen', False):
+        # PyInstaller打包的exe文件
+        base_dir = Path(sys.executable).parent
+    else:
+        # Python脚本
+        base_dir = Path(__file__).parent
+    return base_dir
+
 def main():
-    # 获取脚本所在目录
-    base_dir = Path(__file__).parent
+    # 获取脚本所在目录（兼容exe打包）
+    base_dir = get_base_dir()
     
     # 查找所有转粮数据文件
     all_files = [f for f in os.listdir(base_dir) 
